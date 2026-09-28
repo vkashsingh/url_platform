@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        # Route: /api/users/** -> User Service
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+
+        # Route: /api/urls/** -> URL Service
+        - id: url-service-api
+          uri: ${URL_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/urls/**
+
+        # Route: /{shortCode} -> URL Service (redirect)
+        # Note: Listed last so /api/** routes take priority
+        - id: url-service-redirect
+          uri: ${URL_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/{shortCode}
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.urlplatform: INFO
