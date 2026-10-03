@@ -1,0 +1,11 @@
+apiVersion : v1
+kind : ConfigMap
+metadata : 
+  name : url-platform-config
+  namespace : url-platform
+data :
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "urlplatform"
+  USER_SERVICE_URL: "http://user-service:8081"
+  URL_SERVICE_URL: "http://url-service:8082"
