@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
+  name: url-service
   namespace: url-platform
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user-service
+      app: url-service
   template:
     metadata:
       labels:
-        app: user-service
+        app: url-service
     spec:
       containers:
-        - name: user-service
-          image: url_platform-user-service:latest
+        - name: url-service
+          image: url_platform-url-service:latest
           imagePullPolicy: Never    
           ports:
-            - containerPort: 8081
+            - containerPort: 8082
           env:
             - name: DB_HOST
               valueFrom:
