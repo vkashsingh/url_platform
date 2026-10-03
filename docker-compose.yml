@@ -1,6 +1,7 @@
 services:
 
-  # ─── PostgreSQL ────────────────────────────────────────────────────────────
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────
+
   postgres:
     image: postgres:16-alpine
     container_name: urlplatform-postgres
@@ -14,17 +15,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d urlplatform"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d urlplatform" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  # ─── User Service ──────────────────────────────────────────────────────────
+  # ─── User Service ────────────────────────────────────────────────────────
+
   user-service:
+    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-user-service:v1.0.0
     build:
       context: ./user-service
-      dockerfile: DOCKERFILE
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: urlplatform-user-service
     restart: unless-stopped
     environment:
@@ -39,17 +45,22 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 40s
 
-  # ─── URL Service ───────────────────────────────────────────────────────────
+  # ─── URL Service ─────────────────────────────────────────────────────────
+
   url-service:
+    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-url-service:v1.0.0
     build:
       context: ./url-service
-      dockerfile: DOCKERFILE
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: urlplatform-url-service
     restart: unless-stopped
     environment:
@@ -64,17 +75,22 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 40s
 
-  # ─── API Gateway ───────────────────────────────────────────────────────────
+  # ─── API Gateway ─────────────────────────────────────────────────────────
+
   api-gateway:
+    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-api-gateway:v1.0.0
     build:
       context: ./api-gateway
-      dockerfile: DOCKERFILE
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: urlplatform-api-gateway
     restart: unless-stopped
     environment:
@@ -88,17 +104,22 @@ services:
       url-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 40s
 
-  # ─── Frontend ──────────────────────────────────────────────────────────────
+  # ─── Frontend ────────────────────────────────────────────────────────────
+
   frontend:
+    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-frontend:v1.0.0
     build:
       context: ./frontend
-      dockerfile: DOCKERFILE
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: urlplatform-frontend
     restart: unless-stopped
     environment:
