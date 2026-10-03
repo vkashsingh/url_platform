@@ -1,0 +1,63 @@
+# ============================================================
+# Stage 1: Build the Next.js application
+# ============================================================
+
+# Use Node.js 22 with Alpine Linux.
+# Alpine is a small Linux distribution, which helps keep the
+# Docker image smaller.
+FROM node:22-alpine AS builder
+
+# Set the working directory inside the container.
+# All following commands will run from /app.
+WORKDIR /app
+
+# Copy only package files first.
+# This allows Docker to cache the dependency installation layer.
+# If application source code changes but package.json doesn't,
+# Docker can reuse the npm install layer.
+COPY package.json package-lock.json ./
+
+# Install exactly the dependencies specified in package-lock.json.
+# npm ci is preferred for reproducible builds.
+RUN npm ci
+
+# Copy the remaining frontend source code into the container.
+COPY . .
+
+# Build the optimized production version of the Next.js application.
+RUN npm run build
+
+
+# ============================================================
+# Stage 2: Production runtime
+# ============================================================
+
+# Start a fresh, smaller production image.
+# We don't need the build tools or source code in the final image.
+FROM node:22-alpine AS runner
+
+# Set the working directory for the production application.
+WORKDIR /app
+
+# Tell Next.js/Node that this is a production environment.
+ENV NODE_ENV=production
+
+# Copy the public/static assets required by the application.
+COPY --from=builder /app/public ./public
+
+# Copy the Next.js standalone production output.
+# The standalone build contains the files required to run
+# the application without the complete source/development setup.
+COPY --from=builder /app/.next/standalone ./
+
+# Copy the generated static Next.js files.
+COPY --from=builder /app/.next/static ./.next/static
+
+# Document that the application listens on port 3000.
+# This does NOT publish the port to the host by itself.
+EXPOSE 3000
+
+# Start the Next.js standalone production server.
+CMD ["node", "server.js"]
+
+
