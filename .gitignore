@@ -71,3 +71,9 @@ logs/
 
 # ---- Test reports ----
 surefire-reports/
+
+# ---- SSH Keys / PEM files ----
+*.pem
+*.key
+*.p12
+*.pfx

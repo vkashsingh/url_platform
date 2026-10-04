@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// NEXT_PUBLIC_API_URL is set in .env.local for local development (http://localhost:8080).
+// In production (Kubernetes/Ingress), .env.local is excluded from the Docker build via
+// .dockerignore, so this falls back to '' — making Axios use same-origin relative URLs.
+// The browser then resolves /api/... against the Ingress host (e.g. http://url-platform.local).
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 const apiClient = axios.create({
   baseURL: API_URL,

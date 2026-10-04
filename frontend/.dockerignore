@@ -1,0 +1,8 @@
+# Exclude local dev env files — prevents NEXT_PUBLIC_API_URL=http://localhost:8080
+# from being baked into the production Next.js build.
+.env.local
+.env*.local
+
+# Exclude build output and deps — not needed in image build context.
+.next
+node_modules
