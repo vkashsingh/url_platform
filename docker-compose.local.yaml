@@ -6,14 +6,18 @@ services:
     image: postgres:16-alpine
     container_name: urlplatform-postgres
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: urlplatform
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d urlplatform" ]
       interval: 10s
@@ -24,20 +28,28 @@ services:
   # ─── User Service ─────────────────────────────────────────────
 
   user-service:
-    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-user-service:v1.0.0
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+
+    image: url_platform-user-service:latest
     container_name: urlplatform-user-service
     restart: unless-stopped
+
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: urlplatform
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+
     ports:
       - "8081:8081"
+
     depends_on:
       postgres:
         condition: service_healthy
+
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1" ]
       interval: 15s
@@ -48,20 +60,28 @@ services:
   # ─── URL Service ──────────────────────────────────────────────
 
   url-service:
-    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-url-service:v1.0.0
+    build:
+      context: ./url-service
+      dockerfile: Dockerfile
+
+    image: url_platform-url-service:latest
     container_name: urlplatform-url-service
     restart: unless-stopped
+
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: urlplatform
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+
     ports:
       - "8082:8082"
+
     depends_on:
       postgres:
         condition: service_healthy
+
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health || exit 1" ]
       interval: 15s
@@ -72,19 +92,27 @@ services:
   # ─── API Gateway ──────────────────────────────────────────────
 
   api-gateway:
-    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-api-gateway:v1.0.0
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+
+    image: url_platform-api-gateway:latest
     container_name: urlplatform-api-gateway
     restart: unless-stopped
+
     environment:
       USER_SERVICE_URL: http://user-service:8081
       URL_SERVICE_URL: http://url-service:8082
+
     ports:
       - "8080:8080"
+
     depends_on:
       user-service:
         condition: service_healthy
       url-service:
         condition: service_healthy
+
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1" ]
       interval: 15s
@@ -95,13 +123,20 @@ services:
   # ─── Frontend ─────────────────────────────────────────────────
 
   frontend:
-    image: 278061313986.dkr.ecr.ap-southeast-2.amazonaws.com/urlplatform-frontend:v1.0.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    image: url_platform-frontend:latest
     container_name: urlplatform-frontend
     restart: unless-stopped
+
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
+
     ports:
       - "3000:3000"
+
     depends_on:
       api-gateway:
         condition: service_healthy
